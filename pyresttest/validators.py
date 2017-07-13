@@ -267,6 +267,63 @@ class MiniJsonExtractor(AbstractExtractor):
         return base
 
 
+class ListDictExtractor(AbstractExtractor):
+    """ Extractor that uses jsonpath_mini syntax
+        IE key.key or array_index.key extraction
+    """
+    extractor_type = 'list_dict'
+    is_body_extractor = True
+
+    def extract_internal(self, query=None, args=None, body=None, headers=None):
+        if PYTHON_MAJOR_VERSION > 2 and isinstance(body, binary_type):
+            body = text_type(body, 'utf-8')  # Default JSON encoding
+
+        try:
+            body = json.loads(body)
+            return self.query_dictionary(query, body)
+        except ValueError:
+            raise ValueError("Not legal JSON!")
+
+    @staticmethod
+    def query_dictionary(query, element, delimiter='.'):
+        """ Do an xpath-like query with dictionary, using a template if relevant """
+        # Based on
+        # http://stackoverflow.com/questions/7320319/xpath-like-query-for-nested-python-dictionaries
+        
+        p = query.split('!')
+        if len(p) > 1:
+            query = p[0]
+            keys  = p[1].split(':')
+        else:
+            query = p[0]
+            keys = None
+        try:
+            stripped_query = query.strip(delimiter)
+            if stripped_query:
+                for x in stripped_query.split(delimiter):
+                    try:
+                        x = int(x)
+                        element = element[x]
+                    except ValueError:
+                        element = element[x]
+        except:
+            return None
+
+        result = {}
+        if keys is not None and type(element) is list:
+            for e in element:
+                if type(e) is dict:
+                    result[e[keys[0]]] = e[keys[1]]
+                    
+        return result
+
+    @classmethod
+    def parse(cls, config):
+        base = ListDictExtractor()
+        return cls.configure_base(config, base)
+        return base
+
+
 class HeaderExtractor(AbstractExtractor):
     """ Extractor that pulls out a named header value... or list of values if multiple values defined """
     extractor_type = 'header'
@@ -596,6 +653,7 @@ def register_comparator(comparator_name, comparator_function):
 register_extractor('jsonpath_mini', MiniJsonExtractor.parse)
 register_extractor('header', HeaderExtractor.parse)
 register_extractor('raw_body', RawBodyExtractor.parse)
+register_extractor('list_dict', ListDictExtractor.parse)
 # ENHANCEME: add JsonPath-rw support for full JsonPath syntax
 # ENHANCEME: add elementree support for xpath extract on XML, very simple no?
 # See: https://docs.python.org/2/library/xml.etree.elementtree.html,

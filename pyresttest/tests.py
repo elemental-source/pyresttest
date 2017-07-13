@@ -5,7 +5,6 @@ import json
 import pycurl
 import sys
 
-
 from . import contenthandling
 from .contenthandling import ContentHandler
 from . import validators
@@ -223,6 +222,14 @@ class Test(object):
             for key, value in self.extract_binds.items():
                 result = value.extract(
                     body=response_body, headers=headers, context=context)
+                if type(result) is dict:
+                    for k, v in result.items():
+                        context.bind_variable(k, v)
+                elif type(result) is list:
+                    for i in result:
+                        if type(i) is dict:
+                            for k, v in i:
+                                context.bind_variable(k, v)
                 context.bind_variable(key, result)
 
     def is_context_modifier(self):
