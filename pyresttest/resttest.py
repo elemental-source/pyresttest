@@ -111,6 +111,7 @@ class TestConfig:
     verbose = False
     ssl_insecure = False
     skip_term_colors = False  # Turn off output term colors
+    shared_context = False
 
     # Binding and creation of generators
     variable_binds = None
@@ -626,11 +627,15 @@ def run_testsets(testsets):
     myinteractive = False
     curl_handle = pycurl.Curl()
 
+    context = Context()
+
     for testset in testsets:
         mytests = testset.tests
         myconfig = testset.config
         mybenchmarks = testset.benchmarks
-        context = Context()
+        
+        if not testset.config.shared_context:
+            context = Context()
 
         # Bind variables & add generators if pertinent
         if myconfig.variable_binds:
@@ -799,6 +804,7 @@ def main(args):
         interactive   - OPTIONAL - mode that prints info before and after test exectuion and pauses for user input for each test
         absolute_urls - OPTIONAL - mode that treats URLs in tests as absolute/full URLs instead of relative URLs
         skip_term_colors - OPTIONAL - mode that turn off the output term colors
+        shared_context - OPTIONAL - share context between tests
     """
 
     if 'log' in args and args['log'] is not None:
@@ -852,6 +858,9 @@ def main(args):
         if 'skip_term_colors' in args and args['skip_term_colors'] is not None:
             t.config.skip_term_colors = safe_to_bool(args['skip_term_colors'])
 
+        if 'shared_context' in args and args['shared_context'] is not None and bool(args['shared_context']):
+            t.config.shared_context = safe_to_bool(args['shared_context'])
+
     # Execute all testsets
     failures = run_testsets(tests)
 
@@ -886,6 +895,8 @@ def parse_command_line_args(args_in):
                       action="store_true", dest="absolute_urls")
     parser.add_option(u'--skip_term_colors', help='Turn off the output term colors',
                       action='store_true', default=False, dest="skip_term_colors")
+    parser.add_option(u'--shared_context', help='Share context between tests',
+                      action='store_true', default=False, dest="shared_context")
 
     (args, unparsed_args) = parser.parse_args(args_in)
     args = vars(args)
