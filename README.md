@@ -1,3 +1,5 @@
+[![Docker Automated build](https://img.shields.io/docker/automated/jrottenberg/ffmpeg.svg)](https://hub.docker.com/r/elementalsource/pyresttest/)
+
 pyresttest
 ==========
 
@@ -9,8 +11,12 @@ pyresttest
 - [Sample Test](#sample-test)
 - [Examples](#examples)
 - [Installation](#installation)
+	- [Docker installation](#docker-installation)
+	- [Python installation](#python-installation)
 - [How Do I Use It?](#how-do-i-use-it)
 	- [Running A Simple Test](#running-a-simple-test)
+	    - [Running with Docker](#running-with-docker)
+	    - [Running with Python](#running-with-python)
 	- [Using JSON Validation](#using-json-validation)
 	- [Interactive Mode](#interactive-mode)
 	- [Verbose Output](#verbose-output)
@@ -42,9 +48,8 @@ pyresttest
  
 Apache License, Version 2.0
 
-![Status Badge](http://52.4.228.82:8080/jenkins/buildStatus/icon?job=set-main-build-status) [![PyPI version](https://badge.fury.io/py/pyresttest.svg)](https://badge.fury.io/py/pyresttest) 
+[![PyPI version](https://badge.fury.io/py/pyresttest.svg)](https://badge.fury.io/py/pyresttest) 
 [![PyPI](https://img.shields.io/pypi/dm/Pyresttest.svg)]()
-
 [![Join the chat at https://gitter.im/svanoort/pyresttest](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/svanoort/pyresttest?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 [Changelog](CHANGELOG.md) shows the past and present, [milestones](https://github.com/svanoort/pyresttest/milestones) show the future roadmap.
@@ -52,6 +57,18 @@ Apache License, Version 2.0
 * The changelog will also show features/fixes currently merged to the master branch but not released to PyPi yet (pending installation tests across platforms). 
 
 # Installation
+
+## Docker installation
+
+* Build: `docker build -t elementalsource/pyresttest .`
+* Publish:
+```shell
+docker login
+docker push elementalsource/pyresttest
+```
+
+## Python installation
+
 PyRestTest works on Linux or Mac with Python 2.6, 2.7, or 3.3+ (with module 'future' installed)
 
 **First we need to install package python-pycurl:**
@@ -161,6 +178,25 @@ Manually copying in a working system pycurl installation may help:
 - @BastienAr has created an [Atom editor package](https://atom.io/packages/language-pyresttest) for PyRestTest development (thank you!)
 
 ## Running A Simple Test
+
+### Running with Docker
+
+* Run:
+
+```shell
+docker run --rm -it -v <TESTS_DIR>:/home/newuser/data elementalsource/pyresttest:latest <url> <flags>
+```
+
+* Example:
+```shell
+docker run --rm -it \
+       -v examples:/home/newuser/data \
+       elementalsource/pyresttest:latest \
+       https://api.github.com github_api_smoketest.yaml \
+       --interactive true --print-bodies true
+```
+
+### Running with Python
 
 Run a basic test of the github API:
 
