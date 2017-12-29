@@ -190,7 +190,7 @@ docker run --rm -it -v <TESTS_DIR>:/home/newuser/data elementalsource/pyresttest
 * Example:
 ```shell
 docker run --rm -it \
-       -v examples:/home/newuser/data \
+       -v `pwd`:/home/newuser/data \
        elementalsource/pyresttest:latest \
        https://api.github.com github_api_smoketest.yaml \
        --interactive true --print-bodies true
