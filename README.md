@@ -1,3 +1,5 @@
+[![Docker Automated build](https://img.shields.io/docker/automated/jrottenberg/ffmpeg.svg)](https://hub.docker.com/r/elementalsource/pyresttest/)
+
 pyresttest
 ==========
 
@@ -9,8 +11,12 @@ pyresttest
 - [Sample Test](#sample-test)
 - [Examples](#examples)
 - [Installation](#installation)
+	- [Docker installation](#docker-installation)
+	- [Python installation](#python-installation)
 - [How Do I Use It?](#how-do-i-use-it)
 	- [Running A Simple Test](#running-a-simple-test)
+	    - [Running with Docker](#running-with-docker)
+	    - [Running with Python](#running-with-python)
 	- [Using JSON Validation](#using-json-validation)
 	- [Interactive Mode](#interactive-mode)
 	- [Verbose Output](#verbose-output)
@@ -39,19 +45,30 @@ pyresttest
 # Status
 
 **NEW: Full Python 3 Support in Alpha** - download it, 'pip install future' and give it a try!
- 
+
 Apache License, Version 2.0
 
-![Status Badge](http://52.4.228.82:8080/jenkins/buildStatus/icon?job=set-main-build-status) [![PyPI version](https://badge.fury.io/py/pyresttest.svg)](https://badge.fury.io/py/pyresttest) 
+[![PyPI version](https://badge.fury.io/py/pyresttest.svg)](https://badge.fury.io/py/pyresttest)
 [![PyPI](https://img.shields.io/pypi/dm/Pyresttest.svg)]()
-
 [![Join the chat at https://gitter.im/svanoort/pyresttest](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/svanoort/pyresttest?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 [Changelog](CHANGELOG.md) shows the past and present, [milestones](https://github.com/svanoort/pyresttest/milestones) show the future roadmap.
 
-* The changelog will also show features/fixes currently merged to the master branch but not released to PyPi yet (pending installation tests across platforms). 
+* The changelog will also show features/fixes currently merged to the master branch but not released to PyPi yet (pending installation tests across platforms).
 
 # Installation
+
+## Docker installation
+
+* Build: `docker build -t elementalsource/pyresttest .`
+* Publish:
+```shell
+docker login
+docker push elementalsource/pyresttest
+```
+
+## Python installation
+
 PyRestTest works on Linux or Mac with Python 2.6, 2.7, or 3.3+ (with module 'future' installed)
 
 **First we need to install package python-pycurl:**
@@ -114,13 +131,13 @@ Manually copying in a working system pycurl installation may help:
 - config:
     - testset: "Basic tests"
     - timeout: 100  # Increase timeout from the default 10 seconds
-- test: 
+- test:
     - name: "Basic get"
     - url: "/api/person/"
-- test: 
+- test:
     - name: "Get single person"
     - url: "/api/person/1/"
-- test: 
+- test:
     - name: "Delete a single person, verify that works"
     - url: "/api/person/1/"
     - method: 'DELETE'
@@ -143,7 +160,7 @@ Manually copying in a working system pycurl installation may help:
   ```
 # Examples
 * The [Quickstart](quickstart.md) should be *everyone's* starting point
-* Here's a [really good example](examples/miniapp-extract-validate.yaml) for how to create a user and then do tests on it.  
+* Here's a [really good example](examples/miniapp-extract-validate.yaml) for how to create a user and then do tests on it.
   - This shows how to use extraction from responses, templating, and different test types
 * If you're trying to do something fancy, take a look at the [content-test.yaml](pyresttest/content-test.yaml).
   - This shows most kinds of templating & variable uses. It shows how to read from file, using a variable in the file path, and templating on its content!
@@ -161,6 +178,25 @@ Manually copying in a working system pycurl installation may help:
 - @BastienAr has created an [Atom editor package](https://atom.io/packages/language-pyresttest) for PyRestTest development (thank you!)
 
 ## Running A Simple Test
+
+### Running with Docker
+
+* Run:
+
+```shell
+docker run --rm -it -v <TESTS_DIR>:/home/newuser/data elementalsource/pyresttest:latest <url> <flags>
+```
+
+* Example:
+```shell
+docker run --rm -it \
+       -v `pwd`/examples-docker:/home/newuser/data \
+       elementalsource/pyresttest:latest \
+       https://api.github.com \
+       --interactive true --print-bodies true
+```
+
+### Running with Python
 
 Run a basic test of the github API:
 
@@ -227,7 +263,7 @@ They may also be used to create sample data or perform cleanup *as long as you d
 
 ## Url Test With Timeout
 A simple URL test is equivalent to a basic GET test with that URL.
-Also shows how to use the timeout option in testset config to descrease the default timeout from 10 seconds to 1. 
+Also shows how to use the timeout option in testset config to descrease the default timeout from 10 seconds to 1.
 
 ```yaml
 ---
@@ -235,22 +271,22 @@ Also shows how to use the timeout option in testset config to descrease the defa
     - testset: "Basic tests"
     - timeout: 1
 - url: "/api/person/"  # This is a simple test
-- test: 
+- test:
     - url: "/api/person/"  # This does the same thing
 ```
 
 ## Custom HTTP Options (special curl settings)
-For advanced cases (example: SSL client certs), sometimes you will want to use custom Curl settings that don't have a corresponding option in PyRestTest.  
+For advanced cases (example: SSL client certs), sometimes you will want to use custom Curl settings that don't have a corresponding option in PyRestTest.
 
-This is easy to do: for each test, you can specify custom Curl arguments with 'curl_option_optionname.'  For this, 'optionname' is case-insensitive and the optionname is a [Curl Easy Option](http://curl.haxx.se/libcurl/c/curl_easy_setopt.html) with 'CURLOPT_' removed. 
+This is easy to do: for each test, you can specify custom Curl arguments with 'curl_option_optionname.'  For this, 'optionname' is case-insensitive and the optionname is a [Curl Easy Option](http://curl.haxx.se/libcurl/c/curl_easy_setopt.html) with 'CURLOPT_' removed.
 
 For example, to follow redirects up to 5 times (CURLOPT_FOLLOWLOCATION and CURLOPT_MAXREDIRS):
 ```yaml
 ---
-- test: 
+- test:
     - url: "/api/person/1"
     - curl_option_followlocation: True
-    - curl_option_maxredirs: 5  
+    - curl_option_maxredirs: 5
 ```
 Note that while option names are validated, *no validation* is done on their values.
 
@@ -371,9 +407,9 @@ find -iname '*.rpm'   # Gets the RPM name
 sudo yum localinstall my_rpm_name
 sudo yum install PyYAML python-pycurl  # If using python3, needs 'future' too
 ```
-- You need to install PyYAML & PyCurl manually because Python distutils can't translate python dependencies to RPM packages. 
+- You need to install PyYAML & PyCurl manually because Python distutils can't translate python dependencies to RPM packages.
 
-**Gotcha:** Python distutils add a dependency on your major python version. 
+**Gotcha:** Python distutils add a dependency on your major python version.
 **This means you can't build an RPM for a system with Python 2.6 on a Python 2.7 system.**
 
 ## Building an RPM for RHEL 6/CentOS 6
@@ -389,12 +425,12 @@ sudo yum install rpm-build
   - Releases are cut periodically from master (every 3-6 months generally, or more often if breaking bugs are present) and released to PyPi
   - Feature development is done in feature branches and merged to master by PR when tested (validated by continuous integration in Jenkins)
   - The 'stable' branch tracks the last release, use this if you want to run PyRestTest from source
-* [The changelog is here](CHANGELOG.md), this will show past releases and features merged to master for the next release but not released 
+* [The changelog is here](CHANGELOG.md), this will show past releases and features merged to master for the next release but not released
 * Testing: tested on Ubuntu 14/python 2.7 and CentOS 6/python 6.6, plus Debian Wheezy for Python 3.4.3
 * Releases occur every few months to [PyPi](https://pypi.python.org/pypi/pyresttest/) once a few features are ready to go
 * PyRestTest uses [Semantic Versioning 2.0](http://semver.org/)
 * **Back-compatibility is important! PyRestTest makes a strong effort to maintain command-line and YAML format back-compatibility since 1.0.**
-  - [Extension method signatures](extensions.md) are maintained as much as possible. 
+  - [Extension method signatures](extensions.md) are maintained as much as possible.
   - However, internal python implementations are subject to change.
   - Major version releases (1.x to 2.x, etc) may introduce breaking API changes, but only *with a really darned good reason, and only there's not another way.*
 
@@ -402,7 +438,7 @@ sudo yum install rpm-build
 # Feedback and Contributions
 We welcome any feedback you have, including pull requests, reported issues, etc!
 
-**For new contributors** there are a whole set of issues labelled with [help wanted](https://github.com/svanoort/pyresttest/labels/help%20wanted) which are excellent starting points to offer a contribution! 
+**For new contributors** there are a whole set of issues labelled with [help wanted](https://github.com/svanoort/pyresttest/labels/help%20wanted) which are excellent starting points to offer a contribution!
 
 For instructions on how to set up a dev environment for PyRestTest, see [building.md](building.md).
 
@@ -417,14 +453,14 @@ Bear in mind that this is largely a one-man, outside-of-working-hours effort at 
 
 ## Why not pure-python tests?
 - This is written for an environment where Python is not the sole or primary language
-- **You totally can do pure-Python tests if you want!**  
+- **You totally can do pure-Python tests if you want!**
     - [Extensions](extensions.md) provide a stable API for adding more complex functionality in python
     - All modules can be imported and used as libraries
     - Gotcha: the project is still young, so internal implementation may change often, much more than YAML features
 
 ## Why YAML and not XML/JSON?
 - XML is extremely verbose and has many gotchas for parsing
-- You **CAN use JSON for tests**, it's a subset of YAML. See [miniapp-test.json](examples/miniapp-test.json) for an example. 
+- You **CAN use JSON for tests**, it's a subset of YAML. See [miniapp-test.json](examples/miniapp-test.json) for an example.
 - YAML tends to be the most concise, natural, and easy to write of these three options
 
 ## Does it do load tests?
